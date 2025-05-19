@@ -118,6 +118,8 @@ public class Cell implements Evolvable, Interactable {
         // Start by assuming the cell retains its current state
         Boolean willLive = this.isAlive;
 
+        // Apply Conway's rules to determine the next state
+
         // Overpopulation: more than 3 neighbors kills a live cell
         if (aliveNeighbors > 3) {
             willLive = false;
