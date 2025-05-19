@@ -69,7 +69,7 @@ public class ExtGOLR3GameTests {
             List.of(new Coord(1,1), new Coord(1,2), new Coord(2,1), new Coord(2,2))
         );
         
-        // Apply BLOOM at step 0, then evolve one generation
+        // Apply BLOOM at generation 0, then evolve one generation
         Game result = facade.run(game, 1, Map.of(0, EventType.BLOOM));
         Generation gen1 = result.getGenerations().get(1);
 
