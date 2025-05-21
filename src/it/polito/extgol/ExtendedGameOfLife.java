@@ -1,4 +1,5 @@
 package it.polito.extgol;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -111,8 +112,16 @@ public class ExtendedGameOfLife {
      * @return          The same Game instance, now containing the extended generation history.
      */
     public Game run(Game game, int steps, Map<Integer, EventType> eventMap) {
-        // TODO: implement for R3
-        return null;
+        for (int i = 0; i < steps; i++) {
+            if (eventMap.get(i) != null) {
+                Collection<Tile> tiles = game.getBoard().getTiles();
+                for (Tile tile : tiles) {
+                    game.unrollEvent(eventMap.get(i), tile.getCell());
+                }
+            }
+            game = run(game, 1);
+        }
+        return game;
     }
 
     /**

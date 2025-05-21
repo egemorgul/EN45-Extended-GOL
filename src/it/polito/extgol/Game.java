@@ -241,7 +241,29 @@ public class Game {
      * @param cell  the Cell instance to which the event should be applied
      */
     public void unrollEvent(EventType event, Cell cell) {
-        // TODO: implement event application logic
+        switch (event) {
+            case CATACLYSM:
+                cell.setLifePoints(0);
+                break;
+            case FAMINE:
+                cell.setLifePoints(cell.lifepoints - 1);
+                break;
+            case BLOOM:
+                cell.setLifePoints(cell.lifepoints + 2);
+                break;
+            case BLOOD_MOON:
+                //TODO: see after persistance
+                break;
+            case SANCTUARY:
+                if (cell.getMood() == CellMood.HEALER)
+                    cell.setLifePoints(cell.lifepoints + 1);
+                else if (cell.getMood() == CellMood.VAMPIRE)
+                    cell.setMood(CellMood.NAIVE);
+                break;
+            default:
+                //throw new ExtendedGameOfLifeException("Event type not found.");
+                break;
+        }
     }
 
     /**

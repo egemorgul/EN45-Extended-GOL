@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.CollectionTable;
@@ -305,8 +306,12 @@ public class Generation {
      * @return a Map from Cell to its Integer lifePoints value
      */
     public Map<Cell, Integer> getEnergyStates() {
-        // TODO: create energy states getter
-        return null;
+        return board.getCellSet().stream().collect(
+                            Collectors.toMap(
+                                Function.identity(),
+                                Cell::getLifePoints
+                                )
+                            );
     }
 
     /**
