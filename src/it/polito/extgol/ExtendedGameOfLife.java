@@ -54,6 +54,19 @@ public class ExtendedGameOfLife {
             int aliveNeighbors = c.countAliveNeighbors();
             boolean nextState = c.evolve(aliveNeighbors);
 
+            if (c.isAlive()) {
+                if (!nextState) 
+                    //death
+                    c.setLifePoints(c.getLifePoints() - 1);
+                else
+                    //survival
+                    c.setLifePoints(c.getLifePoints() + 1);
+            } else {
+                if (nextState)
+                    //respawn
+                    c.setLifePoints(0);
+            }
+
             nextStates.put(c, nextState);
         }
 

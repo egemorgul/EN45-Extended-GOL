@@ -311,4 +311,8 @@ public class Cell implements Evolvable, Interactable {
         return null;
     }
 
+    public Tile getTile() {
+        return tile;
+    }
+
 }

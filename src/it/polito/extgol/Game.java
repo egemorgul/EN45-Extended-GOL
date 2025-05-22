@@ -243,20 +243,20 @@ public class Game {
     public void unrollEvent(EventType event, Cell cell) {
         switch (event) {
             case CATACLYSM:
-                cell.setLifePoints(0);
+                cell.getTile().setLifePointModifier(-cell.getLifePoints());
                 break;
             case FAMINE:
-                cell.setLifePoints(cell.lifepoints - 1);
+                cell.getTile().setLifePointModifier(-1);
                 break;
             case BLOOM:
-                cell.setLifePoints(cell.lifepoints + 2);
+                cell.getTile().setLifePointModifier(2);
                 break;
             case BLOOD_MOON:
                 //TODO: see after persistance
                 break;
             case SANCTUARY:
                 if (cell.getMood() == CellMood.HEALER)
-                    cell.setLifePoints(cell.lifepoints + 1);
+                    cell.getTile().setLifePointModifier(1);
                 else if (cell.getMood() == CellMood.VAMPIRE)
                     cell.setMood(CellMood.NAIVE);
                 break;
@@ -264,6 +264,7 @@ public class Game {
                 //throw new ExtendedGameOfLifeException("Event type not found.");
                 break;
         }
+        cell.getTile().interact(cell);
     }
 
     /**

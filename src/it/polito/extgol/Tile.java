@@ -23,7 +23,7 @@ import jakarta.persistence.Transient;
  * Holds coordinate position, occupying Cell, and link back to its Board.
  */
 @Entity
-public class Tile {
+public class Tile implements Interactable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +38,9 @@ public class Tile {
             column = @Column(name = "tile_y", nullable = false))
     })
     private Coord tileCoord;
+
+    @Column(name = "lp_modifier", nullable = false)
+    private Integer lifePointModifier = 0;
 
     /** Reference to the board containing this tile. */
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -195,6 +198,15 @@ public class Tile {
     public Integer getLifePointModifier() {
         // TODO Auto-generated method stub
         return 0;
+    }
+
+    public void setLifePointModifier(Integer newModifier) {
+        lifePointModifier = newModifier;
+    }
+
+    @Override
+    public void interact(Cell other) {
+        other.setLifePoints(other.getLifePoints() + lifePointModifier);
     }
 
 }
