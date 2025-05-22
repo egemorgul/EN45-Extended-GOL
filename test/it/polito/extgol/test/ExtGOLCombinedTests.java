@@ -39,7 +39,7 @@ public class ExtGOLCombinedTests {
     public void setUp() {
         clearDatabase();
         facade = new ExtendedGameOfLife();
-        game  = Game.create("TestGame", 3, 3);
+        game  = Game.createExtended("TestGame", 5, 4);
         board = game.getBoard();
     }
 
