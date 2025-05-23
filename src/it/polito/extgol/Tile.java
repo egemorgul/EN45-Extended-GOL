@@ -23,7 +23,7 @@ import jakarta.persistence.Transient;
  * Holds coordinate position, occupying Cell, and link back to its Board.
  */
 @Entity
-public class Tile {
+public class Tile implements Interactable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,6 +63,10 @@ public class Tile {
     /** Neighboring tiles for interactions. Not persisted. */
     @Transient
     private Set<Tile> neighbors = new HashSet<Tile>();
+
+    /** Life point modifier for this tile */
+    @Column(name = "life_point_modifier", nullable = false)
+    private Integer lifePointModifier = 0;
 
     /**
      * Default constructor required by JPA.
@@ -190,11 +194,31 @@ public class Tile {
      * A positive value grants extra energy to the cell each generation, while
      * a negative value drains energy. A zero value has no effect.
      *
-     * @return the integer modifier to a cell’s lifePoints when evolving
+     * @return the integer modifier to a cell's lifePoints when evolving
      */
     public Integer getLifePointModifier() {
-        // TODO Auto-generated method stub
-        return 0;
+        return lifePointModifier;
     }
-
+    
+    /**
+     * Sets the life point modifier for this tile.
+     * 
+     * @param modifier the value to set for life point modification
+     */
+    public void setLifePointModifier(Integer modifier) {
+        this.lifePointModifier = modifier;
+    }
+    
+    /**
+     * Interacts with the cell on this tile, modifying its life points
+     * based on the tile's lifePointModifier.
+     *
+     * @param cell the Cell to interact with
+     */
+    @Override
+    public void interact(Cell cell) {
+        if (cell != null && cell.isAlive() && lifePointModifier != 0) {
+            cell.setLifePoints(cell.getLifePoints() + lifePointModifier);
+        }
+    }
 }
