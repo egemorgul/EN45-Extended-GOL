@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderColumn;
@@ -64,10 +65,16 @@ public class Game {
       mappedBy       = "game",
       cascade        = CascadeType.ALL,
       orphanRemoval  = true,
-      fetch          = FetchType.LAZY
+      fetch          = FetchType.EAGER
     )
     @OrderColumn(name = "generation_index")
     private List<Generation> generations = new ArrayList<>();
+
+    @Lob
+    @Column(name = "events", nullable = false)
+    private HashMap<Integer, EventType> eventMapInternal = new HashMap<>();
+
+    private final static GameRepository gameRepository = new GameRepository();
 
     /**
      * Default constructor for JPA.
@@ -296,8 +303,7 @@ public class Game {
      * @return a mutable Map from generation step to EventType
      */
     public Map<Integer, EventType> getEventMapInternal() {
-        // TODO: return the actual event schedule map
-        return new HashMap<>();
+        return eventMapInternal;
     }
 
     /**
@@ -310,7 +316,14 @@ public class Game {
      * @return an immutable Map from generation step to EventType
      */
     public static Map<Integer, EventType> loadEvents(Game game) {
-        // TODO: implement repository loading
-        return null; 
+        //getting the loaded map from the db
+        Map<Integer, EventType> eventsMap = gameRepository.findById(game.id).get().getEventMapInternal();
+        //connecting the loaded map with single generations
+        List<Generation> generations = game.getGenerations();
+        for (Map.Entry<Integer,EventType> entry: eventsMap.entrySet()) {
+            if (entry.getKey() < generations.size())
+                generations.get(entry.getKey()).setEventType(entry.getValue());
+        }
+        return eventsMap;
     }
 }

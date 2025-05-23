@@ -133,7 +133,10 @@ public class ExtendedGameOfLife {
                 }
             }
             game = run(game, 1);
+            //insert the event type into its generation
+            game.getGenerations().get(game.getGenerations().size()-1).setEventType(eventMap.get(i));
         }
+        game.getEventMapInternal().putAll(eventMap);
         return game;
     }
 
