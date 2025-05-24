@@ -1,10 +1,12 @@
 package it.polito.extgol.test;
 
+import static it.polito.extgol.test.TestBranchUtils.*;
+import static org.junit.Assert.*;
+
 import java.util.List;
 import java.util.Map;
 
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,7 +20,6 @@ import it.polito.extgol.Generation;
 import it.polito.extgol.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import static it.polito.extgol.test.TestBranchUtils.assumeBranch;
 
 public class ExtGOLR3GameTests {
     private ExtendedGameOfLife facade;
