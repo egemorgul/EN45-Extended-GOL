@@ -101,8 +101,8 @@ public class ExtGOLR2BoardTests {
         Cell cell = facade.getAliveCells(next).get(new Coord(1, 1));
 
         assertEquals(
-            "One positive tile modifier of +3 should yield lifePoints 3 after 1 step",
-            3,
+            "One positive tile modifier of +3 should yield lifePoints 4 after 1 step in survival-maintaining conditions",
+            4,
             cell.getLifePoints()
         );
         assertTrue(
@@ -122,21 +122,21 @@ public class ExtGOLR2BoardTests {
         Game result = facade.run(game, 10);
         Generation g2 = result.getGenerations().get(2);
         Cell cell2 = g2.getBoard().getTile(new Coord(1, 1)).getCell();
-        int cellEnergy2 = g2.getEnergies().get(cell2);
+        int cellEnergy2 = g2.getEnergyStates().get(cell2);
 
         assertEquals(
-            "Cell should have lifepoints -2 (-2 tile modifier at gen2, and stop interaction after death at gen1)",
-            -2,
+            "Cell should have lifepoints -3 (-2 tile modifier at gen2 -1 lifepoint for death, and stopped interaction after death at gen1)",
+            -3,
             cellEnergy2
         );
 
         Generation g10 = result.getGenerations().get(10);
         Cell cell10 = g10.getBoard().getTile(new Coord(1, 1)).getCell();
-        int cellEnergy10 = g10.getEnergies().get(cell10);
+        int cellEnergy10 = g10.getEnergyStates().get(cell10);
 
         assertEquals(
-            "Cell should have lifepoints -2 (-2 tile modifier at gen0, and stop interaction after death at gen1)",
-            -2,
+            "Cell should have lifepoints -3 (-2 tile modifier at gen2 -1 lifepoint for death, and stopped interaction after death at gen1)",
+            -3,
             cellEnergy10
         );
 
@@ -147,7 +147,7 @@ public class ExtGOLR2BoardTests {
 
         assertFalse(
             "Cell should be dead after death-inducing conditions + negative tile interaction",
-            g2.getAliveCells().contains(cell10)
+            g10.getAliveCells().contains(cell10)
         );
     }
 
@@ -161,11 +161,11 @@ public class ExtGOLR2BoardTests {
         Game result = facade.run(game, 2);
         Generation g2 = result.getGenerations().get(2);
         Cell cell2 = g2.getBoard().getTile(new Coord(1, 1)).getCell();
-        int cellEnergy2 = g2.getEnergies().get(cell2);
+        int cellEnergy2 = g2.getEnergyStates().get(cell2);
 
         assertEquals(
-            "Cell should have 0 after neutral tile interaction",
-            0,
+            "Cell should have -1 lifepoints from death-inducing conditions after neutral tile interaction",
+            -1,
             cellEnergy2
         );
         
@@ -188,11 +188,11 @@ public class ExtGOLR2BoardTests {
         Game result = facade.run(game, 1);
         Generation next = result.getGenerations().get(1);
         Cell cell = facade.getAliveCells(next).get(new Coord(2, 2));
-        int cellEnergy = next.getEnergies().get(cell);
+        int cellEnergy = next.getEnergyStates().get(cell);
         
         assertEquals(
-            "Cell should gain +3 lifePoints from tile interaction per generation",
-            3,
+            "Cell should have 4 lifepoints after 1 generation (+3 lifePoints from tile interaction, +1 lifepoint from survival-maintaining conditions)",
+            4,
             cellEnergy
         );
         // cell should remain alive
@@ -244,8 +244,8 @@ public class ExtGOLR2BoardTests {
         Game result = facade.run(game, 1);
         Generation next = result.getGenerations().get(1);
         Map<Integer,List<Cell>> byEnergy = board.getCellsByEnergyLevel(next);
-        assertTrue(byEnergy.containsKey(2));
-        assertTrue(byEnergy.containsKey(10));
+        assertTrue(byEnergy.containsKey(3));
+        assertTrue(byEnergy.containsKey(11));
     }
 
     
@@ -329,13 +329,13 @@ public class ExtGOLR2BoardTests {
         // There should be 4 alive cells
         // assertEquals("Stats count should equal number of cells", 4, stats.getCount())
         // Minimum energy should be initial lifePoints of unmodified cell: 0
-        assertEquals("Minimum energy should be 0", 0, stats.getMin());
-        // Maximum energy should be initial+2 (isolated cell dies)
-        assertEquals("Maximum energy should be 2", 2, stats.getMax());
+        assertEquals("Minimum energy should be 1", 1, stats.getMin());
+        // Maximum energy should be initial lifePoints+1+2 (isolated cell dies)
+        assertEquals("Maximum energy should be 3", 3, stats.getMax());
         // Sum of energies
-        assertEquals("Sum of energies should be 3", 3, stats.getSum());
+        assertEquals("Sum of energies should be 7", 7, stats.getSum());
         // Average energy 
-        assertEquals("Average energy should be 1.25", 1.25, stats.getAverage(), 1e-6);
+        assertEquals("Average energy should be 1.75", 1.75, stats.getAverage(), 1e-6);
     
     }
 
@@ -357,14 +357,15 @@ public class ExtGOLR2BoardTests {
 
         // Check second generation (step 1)
         IntSummaryStatistics first = summaryMap.get(1);
-        assertEquals("Total live cells at step 0 should be 4", 4, first.getCount());
-        assertEquals("Minimum energy should be 0", 0, first.getMin());
-        assertEquals("Maximum energy should be 5", 5, first.getMax());
+        assertEquals("Total live cells at step 1 should be 4", 4, first.getCount());
+        assertEquals("Minimum energy should be 1", 1, first.getMin());
+        assertEquals("Maximum energy should be 6", 6, first.getMax());
 
         // Check last generation (step 2)
         IntSummaryStatistics last = summaryMap.get(2);
         assertEquals("Total live cells at step 2 should be 4", 4, last.getCount());
-        assertEquals("Minimum energy should be 0", 0, last.getMin());
-        assertEquals("Maximum energy should be 10", 10, last.getMax());        
+        assertEquals("Minimum energy should be 2", 2, last.getMin());
+        assertEquals("Maximum energy should be 12", 12, last.getMax());        
     }
 }
+
