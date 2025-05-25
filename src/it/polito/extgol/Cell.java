@@ -70,6 +70,8 @@ public class Cell implements Evolvable, Interactable {
     @OneToOne(mappedBy = "cell", fetch = FetchType.LAZY)
     protected Tile tile;
 
+    protected CellType cellType;
+
     /** Default constructor for JPA compliance. */
     public Cell() {
     }
@@ -117,21 +119,32 @@ public class Cell implements Evolvable, Interactable {
     public Boolean evolve(int aliveNeighbors) {
         // Start by assuming the cell retains its current state
         Boolean willLive = this.isAlive;
-
+        if (willLive) {
+            System.out.println();
+        }
         // Overpopulation: more than 3 neighbors kills a live cell
         if (aliveNeighbors > 3) {
+            this.lifepoints--;
             willLive = false;
         }
         // Underpopulation: fewer than 2 neighbors kills a live cell
         else if (aliveNeighbors < 2) {
+            this.lifepoints--;
             willLive = false;
         }
         // Respawn: exactly 3 neighbors brings a dead cell to life
         else if (!this.isAlive && aliveNeighbors == 3) {
             willLive = true;
+            this.setLifePoints(0);
         }
         // Otherwise (2 or 3 neighbors on a live cell) nothing changes and willLive
         // remains true
+        else {
+            this.lifepoints++;
+        }
+        if (willLive && this.lifepoints < 0) {
+            willLive = false;
+        }
 
         return willLive;
     }
@@ -258,8 +271,7 @@ public class Cell implements Evolvable, Interactable {
      * @return the number of life points the cell currently has
      */
     public int getLifePoints() {
-        // TODO Auto-generated method stub
-        return 0;
+        return lifepoints;
     }
 
     /**
@@ -267,8 +279,8 @@ public class Cell implements Evolvable, Interactable {
      *
      * @param lifePoints the new number of life points to assign to the cell
      */
-    public void setLifePoints(int lifePoints) {
-        // TODO Auto-generated method stub
+    public void setLifePoints(Integer lifePoints) {
+        this.lifepoints = lifePoints;
     }
 
     /**
@@ -290,7 +302,11 @@ public class Cell implements Evolvable, Interactable {
      * @param t the CellType to set (e.g., BASIC, HIGHLANDER, LONER, SOCIAL)
      */
     public void setType(CellType t) {
-        // TODO Auto-generated method stub
+        this.cellType = t;
+    }
+
+    public CellType getCellType() {
+        return cellType;
     }
 
     /**

@@ -305,8 +305,9 @@ public class Generation {
      * @return a Map from Cell to its Integer lifePoints value
      */
     public Map<Cell, Integer> getEnergyStates() {
-        // TODO: create energy states getter
-        return null;
+        Map<Cell, Integer> map = new HashMap<>();
+        this.getAliveCells().forEach(c -> map.put(c, c.getLifePoints()));
+        return map;
     }
 
     /**
