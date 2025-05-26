@@ -246,36 +246,14 @@ public class Board {
      *         corresponds to a row (y-coordinate)
      */
     public String visualize(Generation generation) {
-        // Create a map of coordinates to cells for quick lookup
-        Map<Coord, Cell> aliveCellsMap = generation.getAliveCells().stream()
-                .collect(Collectors.toMap(Cell::getCoordinates, cell -> cell));
+        Set<Coord> alive = generation.getAliveCells().stream()
+                .map(Cell::getCoordinates)
+                .collect(Collectors.toSet());
 
         StringBuilder sb = new StringBuilder();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                Coord currentCoord = new Coord(x, y);
-                Cell cell = aliveCellsMap.get(currentCoord);
-
-                if (cell == null || !cell.isAlive()) {
-                    sb.append('0');
-                } else {
-                    // Different character based on cell type
-                    switch (cell.getCellType()) {
-                        case HIGHLANDER:
-                            sb.append('H');
-                            break;
-                        case LONER:
-                            sb.append('L');
-                            break;
-                        case SOCIAL:
-                            sb.append('S');
-                            break;
-                        case BASIC:
-                        default:
-                            sb.append('C');
-                            break;
-                    }
-                }
+                sb.append(alive.contains(new Coord(x, y)) ? 'C' : '0');
             }
             // use height here so you don't append a newline after the last row
             if (y < height - 1) {
