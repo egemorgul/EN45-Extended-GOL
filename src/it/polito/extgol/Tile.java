@@ -58,7 +58,7 @@ public class Tile implements Interactable {
     @Transient
     private Set<Tile> neighbors = new HashSet<Tile>();
 
-    private Integer lifePointModifier;
+    private Integer lifePointModifier = 0;
 
     /**
      * Default constructor required by JPA.
@@ -200,12 +200,8 @@ public class Tile implements Interactable {
 
     @Override
     public void interact(Cell other) {
-    }
-
-    public void applyTileModifier() {
-        Cell c = this.getCell();
-        if (c.isAlive()) {
-            c.setLifePoints(c.getLifePoints() + this.getLifePointModifier());
+        if (other.isAlive()) {
+            other.setLifePoints(lifePointModifier + other.getLifePoints());
         }
     }
 

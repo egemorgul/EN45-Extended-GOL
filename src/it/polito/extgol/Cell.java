@@ -117,36 +117,29 @@ public class Cell implements Evolvable, Interactable {
      */
     @Override
     public Boolean evolve(int aliveNeighbors) {
-        // Start by assuming the cell retains its current state
-        Boolean willLive = this.isAlive;
-        if (willLive) {
-            System.out.println();
+        boolean willAlive = this.isAlive();
+        if (willAlive) {
+            // Survival
+            if (aliveNeighbors >= 2 && aliveNeighbors <= 3) {
+                willAlive = true;
+                this.setLifePoints(this.getLifePoints() + 1);
+            }
+            // Death
+            else {
+                willAlive = false;
+                lifepoints--;
+            }
+        } else {
+            // Respawn
+            if (aliveNeighbors == 3) {
+                willAlive = true;
+                this.setLifePoints(0);
+            }
         }
-        // Overpopulation: more than 3 neighbors kills a live cell
-        if (aliveNeighbors > 3) {
-            this.lifepoints--;
-            willLive = false;
+        if (this.getLifePoints() < 0) {
+            willAlive = false;
         }
-        // Underpopulation: fewer than 2 neighbors kills a live cell
-        else if (aliveNeighbors < 2) {
-            this.lifepoints--;
-            willLive = false;
-        }
-        // Respawn: exactly 3 neighbors brings a dead cell to life
-        else if (!this.isAlive && aliveNeighbors == 3) {
-            willLive = true;
-            this.setLifePoints(0);
-        }
-        // Otherwise (2 or 3 neighbors on a live cell) nothing changes and willLive
-        // remains true
-        else {
-            this.lifepoints++;
-        }
-        if (willLive && this.lifepoints < 0) {
-            willLive = false;
-        }
-
-        return willLive;
+        return willAlive;
     }
 
     /**

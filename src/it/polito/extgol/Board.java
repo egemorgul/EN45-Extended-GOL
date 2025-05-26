@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IntSummaryStatistics;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -245,14 +246,36 @@ public class Board {
      *         corresponds to a row (y-coordinate)
      */
     public String visualize(Generation generation) {
-        Set<Coord> alive = generation.getAliveCells().stream()
-                .map(Cell::getCoordinates)
-                .collect(Collectors.toSet());
+        // Create a map of coordinates to cells for quick lookup
+        Map<Coord, Cell> aliveCellsMap = generation.getAliveCells().stream()
+                .collect(Collectors.toMap(Cell::getCoordinates, cell -> cell));
 
         StringBuilder sb = new StringBuilder();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                sb.append(alive.contains(new Coord(x, y)) ? 'C' : '0');
+                Coord currentCoord = new Coord(x, y);
+                Cell cell = aliveCellsMap.get(currentCoord);
+
+                if (cell == null || !cell.isAlive()) {
+                    sb.append('0');
+                } else {
+                    // Different character based on cell type
+                    switch (cell.getCellType()) {
+                        case HIGHLANDER:
+                            sb.append('H');
+                            break;
+                        case LONER:
+                            sb.append('L');
+                            break;
+                        case SOCIAL:
+                            sb.append('S');
+                            break;
+                        case BASIC:
+                        default:
+                            sb.append('C');
+                            break;
+                    }
+                }
             }
             // use height here so you don't append a newline after the last row
             if (y < height - 1) {
@@ -277,7 +300,6 @@ public class Board {
     public static Interactable setInteractableTile(Board board, Coord coord, Integer lifePointsModifier) {
         Tile t = board.getTile(coord);
         t.setLifePointsModifier(lifePointsModifier);
-        t.applyTileModifier();
         return t;
     }
 

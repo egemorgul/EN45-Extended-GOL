@@ -306,7 +306,7 @@ public class Generation {
      */
     public Map<Cell, Integer> getEnergyStates() {
         Map<Cell, Integer> map = new HashMap<>();
-        this.getAliveCells().forEach(c -> map.put(c, c.getLifePoints()));
+        this.getBoard().getCellSet().forEach(c -> map.put(c, c.getLifePoints()));
         return map;
     }
 
