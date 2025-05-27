@@ -324,8 +324,8 @@ public class Board {
      */
     public Map<Integer, List<Cell>> getCellsByEnergyLevel(Generation gen) {
         Map<Integer, List<Cell>> returnMap = new HashMap<>();
-        for(Cell c: gen.getAliveCells()){
-            returnMap.computeIfAbsent(c.getLifePoints,ArrayList::new).add(c);
+        for (Cell c : gen.getAliveCells()) {
+            returnMap.computeIfAbsent(c.getLifePoints(), ArrayList::new).add(c);
         }
         return returnMap;
     }
@@ -338,8 +338,8 @@ public class Board {
      */
     public Map<CellType, Integer> countCellsByType(Generation gen) {
         Map<CellType, Integer> map = new HashMap<>();
-        for(Cell c:gen.getAliveCells()){
-            map.put(c.getCellType(),map.getOrDefault(c.getCellType(),0)+1);
+        for (Cell c : gen.getAliveCells()) {
+            map.put(c.getCellType(), map.getOrDefault(c.getCellType(), 0) + 1);
         }
         return map;
     }
@@ -366,8 +366,8 @@ public class Board {
      */
     public Map<Integer, List<Cell>> groupByAliveNeighborCount(Generation gen) {
         Map<Integer, List<Cell>> returnMap = new HashMap<>();
-        for(Cell c: gen.getAliveCells()){
-            returnMap.computeIfAbsent(c.countAliveNeighbors(),ArrayList::new).add(c);
+        for (Cell c : gen.getAliveCells()) {
+            returnMap.computeIfAbsent(c.countAliveNeighbors(), ArrayList::new).add(c);
         }
         return returnMap;
     }
