@@ -203,13 +203,6 @@ public class Generation {
      */
     public Map<Cell, Boolean> snapCells() {
         cellAlivenessStates.clear();
-        for (Tile tile : board.getTiles()) {
-            Cell cell = tile.getCell();
-            if (cell == null) {
-                throw new IllegalStateException("Each tile should hold a cell!");
-            }
-            cellAlivenessStates.put(cell, cell.isAlive());
-        }
         cellLifePoints.clear();
         for (Tile tile : board.getTiles()) {
             Cell cell = tile.getCell();
@@ -217,6 +210,7 @@ public class Generation {
                 throw new IllegalStateException("Each tile should hold a cell!");
             }
             cellLifePoints.put(cell, cell.getLifePoints());
+            cellAlivenessStates.put(cell, cell.isAlive());
         }
         return Map.copyOf(cellAlivenessStates);
     }
