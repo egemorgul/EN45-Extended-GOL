@@ -36,36 +36,27 @@ public class Game {
     /**
      * Human-readable name for this game instance.
      */
-     @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     private String name;
 
     /**
      * The board on which this game is played.
      *
-     * One board per game; cascade so the board is persisted/removed along with the game.  
-     * Stored in TILE table as board_id FK.  
+     * One board per game; cascade so the board is persisted/removed along with the
+     * game.
+     * Stored in TILE table as board_id FK.
      */
-    @OneToOne(
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY,
-        optional = false
-        )
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "board_id", nullable = false, unique = true)
     private Board board;
 
     /**
      * List of all generations in this game, including the initial.
      * 
-     * All generations (including initial) in time order.  
+     * All generations (including initial) in time order.
      * Uses an ORDER_COLUMN so the DB keeps the sequence.
      */
-    @OneToMany(
-      mappedBy       = "game",
-      cascade        = CascadeType.ALL,
-      orphanRemoval  = true,
-      fetch          = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderColumn(name = "generation_index")
     private List<Generation> generations = new ArrayList<>();
 
@@ -103,7 +94,8 @@ public class Game {
 
     /**
      * Factory method to create and fully initialize a Game instance.
-     * Uses a protected constructor to set the name, builds a Board of the given size,
+     * Uses a protected constructor to set the name, builds a Board of the given
+     * size,
      * sets up the first Generation, and returns the ready-to-run Game.
      *
      * @param name   the human-readable name for this game instance
@@ -116,14 +108,15 @@ public class Game {
         Board board = new Board(width, height, game);
         game.setBoard(board);
         Generation.createInitial(game, board);
-        
+
         return game;
     }
 
     /**
      * Factory method to create and fully initialize an extended Game instance.
      * Creates a Game with the given name, constructs an extended Board using
-     * specialized tiles and default cell settings, and initializes the first Generation.
+     * specialized tiles and default cell settings, and initializes the first
+     * Generation.
      *
      * @param name   the human-readable name for this game instance
      * @param width  the number of columns for the game board
@@ -135,11 +128,11 @@ public class Game {
         Board board = Board.createExtended(width, height, game);
         game.setBoard(board);
         Generation.createInitial(game, board);
-        
+
         return game;
     }
 
-     /**
+    /**
      * Appends a new Generation to the end of this game’s timeline.
      * Sets the generation’s back-reference to this Game before adding.
      *
@@ -165,16 +158,19 @@ public class Game {
 
     /**
      * Removes all generations from this Game’s history.
-     * After clearing, the game will have no recorded generations until new ones are added.
+     * After clearing, the game will have no recorded generations until new ones are
+     * added.
      */
     public void clearGenerations() {
         generations.clear();
     }
 
     /**
-     * Retrieves the full history of generations in this game, in chronological order.
+     * Retrieves the full history of generations in this game, in chronological
+     * order.
      *
-     * @return a List of Generation instances representing each step in the simulation
+     * @return a List of Generation instances representing each step in the
+     *         simulation
      */
     public List<Generation> getGenerations() {
         return generations;
@@ -288,6 +284,6 @@ public class Game {
      */
     public static Map<Integer, EventType> loadEvents(Game game) {
         // TODO: implement repository loading
-        return null; 
+        return null;
     }
 }
