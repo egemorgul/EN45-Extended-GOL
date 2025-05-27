@@ -69,6 +69,19 @@ public class Generation {
     @Column(name = "is_alive", nullable = false)
     private Map<Cell, Boolean> cellAlivenessStates = new HashMap<>();
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "generation_lp", joinColumns = {
+            // This maps generation_state.generation_id → generation.id
+            @JoinColumn(name = "generation_id", referencedColumnName = "id"),
+            // These map generation_state.game_id → generation.game_id
+            // generation_state.board_id → generation.board_id
+            @JoinColumn(name = "game_id", referencedColumnName = "game_id"),
+            @JoinColumn(name = "board_id", referencedColumnName = "board_id")
+    })
+    @MapKeyJoinColumn(name = "cell_id")
+    @Column(name = "has_lifepoints", nullable = false)
+    private Map<Cell, Integer> cellLifePoints = new HashMap<>();
+
     /**
      * Protected no-argument constructor required by JPA.
      *
@@ -197,6 +210,14 @@ public class Generation {
             }
             cellAlivenessStates.put(cell, cell.isAlive());
         }
+        cellLifePoints.clear();
+        for (Tile tile : board.getTiles()) {
+            Cell cell = tile.getCell();
+            if (cell == null) {
+                throw new IllegalStateException("Each tile should hold a cell!");
+            }
+            cellLifePoints.put(cell, cell.getLifePoints());
+        }
         return Map.copyOf(cellAlivenessStates);
     }
 
@@ -305,9 +326,7 @@ public class Generation {
      * @return a Map from Cell to its Integer lifePoints value
      */
     public Map<Cell, Integer> getEnergyStates() {
-        Map<Cell, Integer> map = new HashMap<>();
-        this.getBoard().getCellSet().forEach(c -> map.put(c, c.getLifePoints()));
-        return map;
+        return cellLifePoints;
     }
 
     /**
@@ -317,8 +336,7 @@ public class Generation {
      *         = dead)
      */
     public Map<Cell, Boolean> getCellAlivenessStates() {
-        // TODO: create aliveness states getter
-        return null;
+        return cellAlivenessStates;
     }
 
     /**

@@ -72,6 +72,8 @@ public class Board {
     @MapKey(name = "tileCoord")
     private Map<Coord, Tile> tiles = new HashMap<>();
 
+    private static final BoardRepository boardRepository = new BoardRepository();
+
     /**
      * Default constructor required by JPA.
      */
@@ -322,10 +324,7 @@ public class Board {
      */
     public Map<Integer, List<Cell>> getCellsByEnergyLevel(Generation gen) {
         Map<Integer, List<Cell>> returnMap = new HashMap<>();
-        for (Cell c : gen.getAliveCells()) {
-            int lp = c.getLifePoints();
-            returnMap.computeIfAbsent(lp, ArrayList::new).add(c);
-        }
+        gen.getAliveCells().forEach(c -> returnMap.computeIfAbsent(c.getLifePoints(), ArrayList::new).add(c));
         return returnMap;
     }
 
@@ -336,7 +335,6 @@ public class Board {
      * @return a Map from CellType to the count of alive cells of that type
      */
     public Map<CellType, Integer> countCellsByType(Generation gen) {
-        // TODO: query or iterate to count alive cells by CellTyp
         Map<CellType, Integer> map = new HashMap<>();
         gen.getAliveCells().forEach(c -> map.put(c.getCellType(), map.getOrDefault(c.getCellType(), 0) + 1));
         return null;
@@ -350,7 +348,6 @@ public class Board {
      * @return a List of the top n Cells by lifePoints, in descending order
      */
     public List<Cell> topEnergyCells(Generation gen, int n) {
-        // TODO: sort alive cells by lifePoints and return the first n
         List<Cell> returnList = gen.getAliveCells().stream()
                 .sorted(Comparator.comparing(Cell::getLifePoints).reversed()).toList();
         return returnList.subList(0, n);
@@ -365,10 +362,7 @@ public class Board {
      */
     public Map<Integer, List<Cell>> groupByAliveNeighborCount(Generation gen) {
         Map<Integer, List<Cell>> returnMap = new HashMap<>();
-        for (Cell c : gen.getAliveCells()) {
-            int lp = c.countAliveNeighbors();
-            returnMap.computeIfAbsent(lp, ArrayList::new).add(c);
-        }
+        gen.getAliveCells().forEach(c -> returnMap.computeIfAbsent(c.countAliveNeighbors(), ArrayList::new).add(c));
         return returnMap;
     }
 
@@ -380,7 +374,7 @@ public class Board {
      * @return an IntSummaryStatistics with aggregated lifePoints metrics
      */
     public IntSummaryStatistics energyStatistics(Generation gen) {
-        return gen.getAliveCells().stream().mapToInt(Cell::getLifePoints).summaryStatistics();
+        return boardRepository.getEnergyStatistics(gen);
     }
 
     /**
@@ -392,7 +386,6 @@ public class Board {
      * @return a Map from generation step index to its IntSummaryStatistics
      */
     public Map<Integer, IntSummaryStatistics> getTimeSeriesStats(int fromStep, int toStep) {
-        // TODO: iterate generations in range and compute energyStatistics for each
         Map<Integer, IntSummaryStatistics> returnMap = new HashMap<>();
         for (int i = fromStep; i <= toStep; i++) {
             Generation gen = game.getGenerations().get(i);
@@ -402,4 +395,9 @@ public class Board {
         }
         return returnMap;
     }
+
+    public BoardRepository getBoardRepository() {
+        return boardRepository;
+    }
+
 }

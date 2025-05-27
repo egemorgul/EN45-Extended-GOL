@@ -95,6 +95,7 @@ public class ExtendedGameOfLife {
             Generation next = evolve(current);
             current = next;
         }
+        saveGame(game);
         return game;
     }
 
