@@ -42,7 +42,24 @@ public class ExtendedGameOfLife {
                 "Generation must have associated Board and Game!");
         }
 
-        // Step 1: Compute next state for each cell based only on current generation state
+        // Step 1 & 2: Apply all interactions (tile-cell and cell-cell) in one pass
+        for (Tile tile : board.getTiles()) {
+            Cell cell = tile.getCell();
+            if (cell != null) {
+                // Apply tile interaction with cell
+                tile.interact(cell);
+                
+                // Apply cell-to-cell interactions with neighbors
+                for (Tile neighborTile : tile.getNeighbors()) {
+                    Cell neighbor = neighborTile.getCell();
+                    if (neighbor != null) {
+                        cell.interact(neighbor);
+                    }
+                }
+            }
+        }
+
+        // Step 3: Compute next state for each cell based on current generation state
         Map<Cell, Boolean> nextStates = new HashMap<>();
         for (Tile tile : board.getTiles()) {
             Cell c = tile.getCell();
@@ -56,17 +73,17 @@ public class ExtendedGameOfLife {
             nextStates.put(c, nextState);
         }
 
-        // Step 2: Instantiate the next Generation based on current
+        // Step 4: Instantiate the next Generation based on current
         Generation nextGen = Generation.createNextGeneration(current);
 
-        // Step 3: Apply all computed states simultaneously to avoid intermediate inconsistencies
+        // Step 5: Apply all computed states simultaneously
         for (Map.Entry<Cell, Boolean> e : nextStates.entrySet()) {
             Cell c = e.getKey();
             c.setAlive(e.getValue());
-            c.addGeneration(nextGen);  // register cell with new generation
+            c.addGeneration(nextGen);
         }
 
-        // Step 4: Persist snapshot of the next generation state
+        // Step 6: Persist snapshot of the next generation state
         nextGen.snapCells();
 
         return nextGen;

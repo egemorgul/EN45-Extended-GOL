@@ -50,7 +50,19 @@ public class Cell implements Evolvable, Interactable {
 
     /** Persisted lifepoints (default 0) */
     @Column(name = "lifepoints", nullable = false)
-    protected Integer lifepoints = 0;
+    protected Integer lifePoints = 0;
+    
+    /** The cell type determining specialized behavior rules */
+    @Column(name = "cell_type", nullable = false)
+    private CellType cellType = CellType.BASIC;
+    
+    /** The cell mood determining interaction behavior */
+    @Column(name = "cell_mood", nullable = false)
+    private CellMood cellMood = CellMood.NAIVE;
+    
+    /** Counter for tracking survival in death conditions (for HIGHLANDER) */
+    @Transient
+    private int deathGenerationCounter = 0;
 
     /** Reference to the parent board (read-only). */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -101,14 +113,8 @@ public class Cell implements Evolvable, Interactable {
     }
 
     /**
-     * Applies the classic Conway’s Game of Life rules to calculate the cell’s next
-     * alive/dead state.
-     *
-     * Rules:
-     * - Underpopulation: A live cell with fewer than 2 neighbors dies.
-     * - Overpopulation: A live cell with more than 3 neighbors dies.
-     * - Respawn: A dead cell with exactly 3 neighbors becomes alive.
-     * - Survival: A live cell with 2 or 3 neighbors stays alive.
+     * Applies the classic Conway's Game of Life rules to calculate the cell's next
+     * alive/dead state, extended with specialized cell behaviors.
      *
      * @param aliveNeighbors the count of alive neighboring cells
      * @return true if the cell will live, false otherwise
@@ -117,23 +123,80 @@ public class Cell implements Evolvable, Interactable {
     public Boolean evolve(int aliveNeighbors) {
         // Start by assuming the cell retains its current state
         Boolean willLive = this.isAlive;
+        boolean liveConditionsMet = false;
 
-        // Overpopulation: more than 3 neighbors kills a live cell
-        if (aliveNeighbors > 3) {
-            willLive = false;
+        // Apply specialized cell type behaviors using instanceof
+        if (cellType == CellType.HIGHLANDER) {
+            // Highlander can survive death conditions for 3 generations
+            if (isAlive && (aliveNeighbors < 2 || aliveNeighbors > 3)) {
+                if (deathGenerationCounter < 3) {
+                    deathGenerationCounter++;
+                    liveConditionsMet = true;
+                } else {
+                    deathGenerationCounter = 0;
+                    liveConditionsMet = false;
+                }
+            } else {
+                deathGenerationCounter = 0;
+                liveConditionsMet = evaluateBasicRules(aliveNeighbors);
+            }
+        } else if (cellType == CellType.LONER) {
+            // Loner can survive with as few as 1 neighbor
+            if (isAlive) {
+                liveConditionsMet = (aliveNeighbors >= 1 && aliveNeighbors <= 3);
+            } else {
+                // For dead cells, standard respawn rule applies
+                liveConditionsMet = (aliveNeighbors == 3);
+            }
+        } else if (cellType == CellType.SOCIAL) {
+            // Social can survive with up to 8 neighbors
+            if (isAlive) {
+                liveConditionsMet = (aliveNeighbors >= 2);
+            } else {
+                // For dead cells, standard respawn rule applies
+                liveConditionsMet = (aliveNeighbors == 3);
+            }
+        } else {
+            // Apply standard Conway rules (BASIC)
+            liveConditionsMet = evaluateBasicRules(aliveNeighbors);
         }
-        // Underpopulation: fewer than 2 neighbors kills a live cell
-        else if (aliveNeighbors < 2) {
-            willLive = false;
-        }
-        // Respawn: exactly 3 neighbors brings a dead cell to life
-        else if (!this.isAlive && aliveNeighbors == 3) {
+        
+        // Update life points based on cell's fate
+        if (isAlive) {
+            if (liveConditionsMet) {
+                // Cell survives - gain a life point
+                lifePoints++;
+                willLive = true;
+            } else {
+                // Cell dies - lose a life point
+                lifePoints--;
+                willLive = false;
+            }
+        } else if (liveConditionsMet) {
+            // Dead cell respawns - reset life points
+            lifePoints = 0;
             willLive = true;
         }
-        // Otherwise (2 or 3 neighbors on a live cell) nothing changes and willLive
-        // remains true
+        
+        // A cell must have non-negative life points to be alive
+        if (lifePoints < 0) {
+            willLive = false;
+        }
 
         return willLive;
+    }
+    
+    /**
+     * Helper method to evaluate basic Conway's Game of Life rules
+     */
+    private boolean evaluateBasicRules(int aliveNeighbors) {
+        if (isAlive) {
+            // Survival: 2-3 neighbors
+            return (aliveNeighbors == 2 || aliveNeighbors == 3);
+        } else {
+            // Respawn: exactly 3 neighbors
+            return (aliveNeighbors == 3);
+        }
     }
 
     /**
@@ -250,7 +313,7 @@ public class Cell implements Evolvable, Interactable {
         return getX() + "," + getY();
     }
 
-    // EXTENDED BEHAVIORS
+    // EXTENDED BEHAVIORS implementations
 
     /**
      * Retrieves the current energy level of this cell.
@@ -258,8 +321,7 @@ public class Cell implements Evolvable, Interactable {
      * @return the number of life points the cell currently has
      */
     public int getLifePoints() {
-        // TODO Auto-generated method stub
-        return 0;
+        return lifePoints;
     }
 
     /**
@@ -268,20 +330,49 @@ public class Cell implements Evolvable, Interactable {
      * @param lifePoints the new number of life points to assign to the cell
      */
     public void setLifePoints(int lifePoints) {
-        // TODO Auto-generated method stub
+        this.lifePoints = lifePoints;
     }
 
     /**
      * Implements the interact() method of Interactable to
      * define the interaction between this cell and another cell.
-     * Implementations will adjust life points, mood, or other state based on the
-     * interaction rules.
+     * Interactions adjust life points and potentially mood based on the
+     * mood types of both cells.
      *
-     * @param cell the Cell object to interact with
+     * @param otherCell the Cell object to interact with
      */
     @Override
     public void interact(Cell otherCell) {
-        // TODO Auto-generated method stub
+        // Only alive cells can interact
+        if (!isAlive || !otherCell.isAlive()) {
+            return;
+        }
+        
+        // Interaction rules based on moods
+        if (cellMood == CellMood.HEALER) {
+            if (otherCell.getMood() == CellMood.NAIVE) {
+                // HEALER grants 1 lifePoint to NAIVE
+                otherCell.setLifePoints(otherCell.getLifePoints() + 1);
+            } else if (otherCell.getMood() == CellMood.VAMPIRE) {
+                // VAMPIRE absorbs 1 lifePoint from HEALER
+                this.lifePoints--;
+                otherCell.setLifePoints(otherCell.getLifePoints() + 1);
+            }
+            // HEALER + HEALER: nothing happens
+        } else if (cellMood == CellMood.VAMPIRE) {
+            if (otherCell.getMood() == CellMood.NAIVE && otherCell.getLifePoints() >= 0) {
+                // VAMPIRE absorbs 1 lifePoint from NAIVE and turns them into VAMPIRE
+                this.lifePoints++;
+                otherCell.setLifePoints(otherCell.getLifePoints() - 1);
+                otherCell.setMood(CellMood.VAMPIRE);
+            } else if (otherCell.getMood() == CellMood.HEALER) {
+                // VAMPIRE absorbs 1 lifePoint from HEALER
+                this.lifePoints++;
+                otherCell.setLifePoints(otherCell.getLifePoints() - 1);
+            }
+            // VAMPIRE + VAMPIRE: nothing happens
+        }
+        // NAIVE + NAIVE: nothing happens
     }
 
     /**
@@ -290,7 +381,16 @@ public class Cell implements Evolvable, Interactable {
      * @param t the CellType to set (e.g., BASIC, HIGHLANDER, LONER, SOCIAL)
      */
     public void setType(CellType t) {
-        // TODO Auto-generated method stub
+        this.cellType = t;
+    }
+    
+    /**
+     * Gets the current type of this cell.
+     * 
+     * @return the CellType of this cell
+     */
+    public CellType getType() {
+        return this.cellType;
     }
 
     /**
@@ -299,17 +399,15 @@ public class Cell implements Evolvable, Interactable {
      * @param mood the CellMood to assign (NAIVE, HEALER, or VAMPIRE)
      */
     public void setMood(CellMood mood) {
-        // TODO Auto-generated method stub
+        this.cellMood = mood;
     }
 
     /**
      * Retrieves the current mood of this cell.
      *
-     * @return the CellMood representing the cell’s interaction style
+     * @return the CellMood representing the cell's interaction style
      */
     public CellMood getMood() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.cellMood;
     }
-
 }
