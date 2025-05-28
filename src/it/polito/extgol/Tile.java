@@ -32,10 +32,8 @@ public class Tile implements Interactable {
     /** Coordinates of the tile on the board. */
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name = "x",
-            column = @Column(name = "tile_x", nullable = false)),
-        @AttributeOverride(name = "y",
-            column = @Column(name = "tile_y", nullable = false))
+            @AttributeOverride(name = "x", column = @Column(name = "tile_x", nullable = false)),
+            @AttributeOverride(name = "y", column = @Column(name = "tile_y", nullable = false))
     })
     private Coord tileCoord;
 
@@ -52,11 +50,7 @@ public class Tile implements Interactable {
     /**
      * The cell occupying this tile.
      */
-    @OneToOne(
-      cascade = CascadeType.ALL,
-      orphanRemoval = true,
-      fetch = FetchType.LAZY
-    )
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "cell_id", nullable = false, unique = true)
     private Cell cell;
 
@@ -77,11 +71,12 @@ public class Tile implements Interactable {
     /**
      * Constructs a tile at the given coordinates,
      * and the respective cell initialized as not alive
+     * 
      * @param x column index (0-based)
      * @param y row index (0-based)
      */
     public Tile(int x, int y, Board b, Game g) {
-        this.tileCoord = new Coord(x,y);
+        this.tileCoord = new Coord(x, y);
         this.board = b;
         this.game = g;
         this.cell = new Cell(this.tileCoord, this, b, g);
@@ -187,9 +182,10 @@ public class Tile implements Interactable {
     }
 
     // EXTENDED BEHAVIORS
-    
+
     /**
-     * Retrieves the life point modifier that this tile applies to any cell occupying it.
+     * Retrieves the life point modifier that this tile applies to any cell
+     * occupying it.
      * 
      * A positive value grants extra energy to the cell each generation, while
      * a negative value drains energy. A zero value has no effect.

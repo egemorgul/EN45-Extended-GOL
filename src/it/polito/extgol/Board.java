@@ -1,5 +1,7 @@
 package it.polito.extgol;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IntSummaryStatistics;
@@ -7,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -22,9 +25,12 @@ import jakarta.persistence.OneToOne;
 /**
  * Entity representing the game board grid in the Extended Game of Life.
  *
- * This class models a two-dimensional board of fixed dimensions (defaulting to 5×5)
- * composed of Tile entities. It maintains the mapping from coordinates to tiles,
- * establishes neighbor relationships, and provides both basic Conway visualization
+ * This class models a two-dimensional board of fixed dimensions (defaulting to
+ * 5×5)
+ * composed of Tile entities. It maintains the mapping from coordinates to
+ * tiles,
+ * establishes neighbor relationships, and provides both basic Conway
+ * visualization
  * and hooks for extended behaviors such as energy modifiers, interactive tiles,
  * and analytic methods over cell lifePoints.
  *
@@ -33,7 +39,8 @@ import jakarta.persistence.OneToOne;
  * - Initialization of the tile grid and adjacency links
  * - Retrieval of tiles and cells for simulation logic
  * - String-based visualization of cell states in a generation
- * - Factory support for the extended version (interactable tiles, default moods/types)
+ * - Factory support for the extended version (interactable tiles, default
+ * moods/types)
  * - Analytic operations over generations (e.g., counting, grouping, statistics)
  */
 @Entity
@@ -45,32 +52,30 @@ public class Board {
 
     /** Number of columns on the board. */
     @Column(nullable = false)
-    private Integer width=5;
+    private Integer width = 5;
 
     /** Number of rows on the board. */
-    @Column(nullable = false)    
-    private Integer height=5;
+    @Column(nullable = false)
+    private Integer height = 5;
 
     /** Inverse one-to-one back to owning Game. */
     @OneToOne(mappedBy = "board", fetch = FetchType.LAZY)
     private Game game;
 
     /**
-     * Map of tile coordinates to Tile entities.  
+     * Map of tile coordinates to Tile entities.
      */
-    @OneToMany(
-      mappedBy      = "board",
-      cascade       = CascadeType.ALL,
-      orphanRemoval = true,
-      fetch         = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @MapKey(name = "tileCoord")
     private Map<Coord, Tile> tiles = new HashMap<>();
+
+    private static final BoardRepository boardRepository = new BoardRepository();
 
     /**
      * Default constructor required by JPA.
      */
-    public Board() {}
+    public Board() {
+    }
 
     /**
      * Constructs a Board of the given width and height, associates it with the
@@ -89,13 +94,15 @@ public class Board {
     }
 
     /**
-     * Factory method to create a fully initialized Board for the extended Game of Life.
+     * Factory method to create a fully initialized Board for the extended Game of
+     * Life.
      * 
-     * This sets up a new Board of the given dimensions, associates it with the provided
+     * This sets up a new Board of the given dimensions, associates it with the
+     * provided
      * Game instance, and applies default extended settings:
      * 
-     *   -All tiles are made interactable with a lifePointModifier of 0.
-     *   -All cells are initialized with a NAIVE mood and BASIC cell type.
+     * -All tiles are made interactable with a lifePointModifier of 0.
+     * -All cells are initialized with a NAIVE mood and BASIC cell type.
      *
      *
      * @param width  the number of columns on the board
@@ -124,16 +131,17 @@ public class Board {
      * Populates and links all Tile instances for this Board.
      *
      * This method clears any existing tiles, then:
-     *   1. Creates a Tile at each (x, y) coordinate within the board’s width and height,
-     *      associates it with this Board and its Game, and stores it in the tiles map.
-     *   2. Iterates over every Tile to establish neighbor relationships by
-     *      calling Tile's initializeNeighbors(...) with the adjacent tiles.
+     * 1. Creates a Tile at each (x, y) coordinate within the board’s width and
+     * height,
+     * associates it with this Board and its Game, and stores it in the tiles map.
+     * 2. Iterates over every Tile to establish neighbor relationships by
+     * calling Tile's initializeNeighbors(...) with the adjacent tiles.
      *
      * This setup ensures each tile knows its position and its surrounding tiles,
      * enabling neighbor-based logic in the simulation.
      */
     private void initializeTiles() {
-        tiles.clear();        
+        tiles.clear();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 Tile tile = new Tile(x, y, this, this.game);
@@ -141,7 +149,7 @@ public class Board {
                 tiles.put(tile.getCoordinates(), tile);
             }
         }
-        for (Tile t : tiles.values()) {   
+        for (Tile t : tiles.values()) {
             t.initializeNeighbors(getAdjacentTiles(t));
         }
     }
@@ -149,11 +157,14 @@ public class Board {
     /**
      * Computes and returns all neighboring Tiles surrounding the specified tile.
      *
-     * Iterates over the eight possible offsets (dx, dy) around the tile’s coordinates,
-     * skips the tile itself, and includes only those tiles that exist within the neighborhood.
+     * Iterates over the eight possible offsets (dx, dy) around the tile’s
+     * coordinates,
+     * skips the tile itself, and includes only those tiles that exist within the
+     * neighborhood.
      *
      * @param tile the central Tile for which neighbors are sought
-     * @return a Set of adjacent Tile instances (up to eight) surrounding the given tile
+     * @return a Set of adjacent Tile instances (up to eight) surrounding the given
+     *         tile
      */
     public Set<Tile> getAdjacentTiles(Tile tile) {
         Set<Tile> adj = new HashSet<>();
@@ -162,10 +173,11 @@ public class Board {
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 // skip the center tile itself
-                if (dx == 0 && dy == 0) continue;
+                if (dx == 0 && dy == 0)
+                    continue;
 
                 Tile t = getTile(new Coord(cx + dx, cy + dy));
-                
+
                 if (t != null) { // skipping null references (e.g., border conditions)
                     adj.add(t);
                 }
@@ -175,8 +187,8 @@ public class Board {
     }
 
     /**
-    * Getters and setters
-    */
+     * Getters and setters
+     */
 
     /**
      * Returns the unique identifier for this Board.
@@ -193,14 +205,15 @@ public class Board {
      * @param c the Coord position to look up
      * @return the Tile at those coordinates
      */
-    public Tile getTile(Coord c){
+    public Tile getTile(Coord c) {
         return tiles.get(c);
     }
 
     /**
      * Returns an immutable list of all Tiles on this Board.
      *
-     * This defensive copy prevents external modification of the board’s tile collection.
+     * This defensive copy prevents external modification of the board’s tile
+     * collection.
      *
      * @return a List of all Tile instances on the board
      */
@@ -220,20 +233,22 @@ public class Board {
         }
         return cellSet;
     }
-    
+
     /**
-     * Visualizes the given Generation by mapping alive and dead cells onto a character grid.
+     * Visualizes the given Generation by mapping alive and dead cells onto a
+     * character grid.
      * Alive cells are represented by 'C' and dead cells by '0'.
      * Each row of the board is separated by a newline character.
      *
      * @param generation the Generation object containing the current cell states
-     * @return a multi-line String representing the board, where each line corresponds to a row (y-coordinate)
+     * @return a multi-line String representing the board, where each line
+     *         corresponds to a row (y-coordinate)
      */
     public String visualize(Generation generation) {
         Set<Coord> alive = generation.getAliveCells().stream()
-            .map(Cell::getCoordinates)
-            .collect(Collectors.toSet());
-    
+                .map(Cell::getCoordinates)
+                .collect(Collectors.toSet());
+
         StringBuilder sb = new StringBuilder();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -250,17 +265,19 @@ public class Board {
     // EXTENDED BEHAVIORS
 
     /**
-     * Creates an interactable Tile with the specified lifePoints modifier 
+     * Creates an interactable Tile with the specified lifePoints modifier
      * at the given coordinate on the board.
      *
-     * @param board               the Board on which to place the tile
-     * @param coord               the Coord position for the new tile
-     * @param lifePointsModifier  the amount of lifePoints this tile will add (or subtract) each generation
+     * @param board              the Board on which to place the tile
+     * @param coord              the Coord position for the new tile
+     * @param lifePointsModifier the amount of lifePoints this tile will add (or
+     *                           subtract) each generation
      * @return the newly created Interactable tile
      */
     public static Interactable setInteractableTile(Board board, Coord coord, Integer lifePointsModifier) {
-        // TODO: implement setting an Interactable tile in the board's tiles map
-        return null;
+        Tile t = board.getTile(coord);
+        t.setLifePointModifier(lifePointsModifier);
+        return t;
     }
 
     /**
@@ -270,8 +287,7 @@ public class Board {
      * @return the count of alive cells in gen
      */
     public Integer countCells(Generation generation) {
-        // TODO: count and return the number of cells where isAlive == true
-        return -1;
+        return generation.getAliveCells().size();
     }
 
     /**
@@ -282,8 +298,19 @@ public class Board {
      * @return the Cell with maximum lifePoints, or null if no cells are alive
      */
     public Cell getHighestEnergyCell(Generation gen) {
-        // TODO: locate and return the highest-energy cell per the spec
-        return null;
+        Stream<Cell> orderedList = gen.getAliveCells().stream()
+                .sorted(Comparator.comparing(Cell::getLifePoints).reversed()
+                        .thenComparing(Cell::getY)
+                        .thenComparing(Cell::getX));
+        return orderedList.findFirst().orElse(null);
+
+    }
+
+    public Cell getLowestEnergyCell(Generation gen) {
+        Stream<Cell> orderedList = gen.getAliveCells().stream()
+                .sorted(Comparator.comparing(Cell::getLifePoints));
+        return orderedList.findFirst().orElse(null);
+
     }
 
     /**
@@ -293,8 +320,11 @@ public class Board {
      * @return a Map from lifePoints value to the List of Cells having that energy
      */
     public Map<Integer, List<Cell>> getCellsByEnergyLevel(Generation gen) {
-        // TODO: build and return grouping of alive cells by lifePoints
-        return null;
+        Map<Integer, List<Cell>> returnMap = new HashMap<>();
+        for (Cell c : gen.getAliveCells()) {
+            returnMap.computeIfAbsent(c.getLifePoints(), ArrayList::new).add(c);
+        }
+        return returnMap;
     }
 
     /**
@@ -304,8 +334,11 @@ public class Board {
      * @return a Map from CellType to the count of alive cells of that type
      */
     public Map<CellType, Integer> countCellsByType(Generation gen) {
-        // TODO: query or iterate to count alive cells by CellType
-        return null;
+        Map<CellType, Integer> map = new HashMap<>();
+        for (Cell c : gen.getAliveCells()) {
+            map.put(c.getCellType(), map.getOrDefault(c.getCellType(), 0) + 1);
+        }
+        return map;
     }
 
     /**
@@ -316,41 +349,58 @@ public class Board {
      * @return a List of the top n Cells by lifePoints, in descending order
      */
     public List<Cell> topEnergyCells(Generation gen, int n) {
-        // TODO: sort alive cells by lifePoints and return the first n
-        return null;
+        List<Cell> returnList = gen.getAliveCells().stream()
+                .sorted(Comparator.comparing(Cell::getLifePoints).reversed()).toList();
+        return returnList.subList(0, n);
     }
 
     /**
      * Groups each alive cell by its number of live neighbors.
      *
      * @param gen the Generation instance to analyze
-     * @return a Map from neighbor count to the List of Cells having that many alive neighbors
+     * @return a Map from neighbor count to the List of Cells having that many alive
+     *         neighbors
      */
     public Map<Integer, List<Cell>> groupByAliveNeighborCount(Generation gen) {
-        // TODO: group alive cells based on countAliveNeighbors()
-        return null;
+        Map<Integer, List<Cell>> returnMap = new HashMap<>();
+        for (Cell c : gen.getAliveCells()) {
+            returnMap.computeIfAbsent(c.countAliveNeighbors(), ArrayList::new).add(c);
+        }
+        return returnMap;
     }
 
     /**
-     * Computes summary statistics (count, min, max, sum, average) over all alive cells’ lifePoints.
+     * Computes summary statistics (count, min, max, sum, average) over all alive
+     * cells’ lifePoints.
      *
      * @param gen the Generation instance to analyze
      * @return an IntSummaryStatistics with aggregated lifePoints metrics
      */
     public IntSummaryStatistics energyStatistics(Generation gen) {
-        // TODO: collect lifePoints of all alive cells into an IntSummaryStatistics
-        return null;
+        return boardRepository.getEnergyStatistics(gen);
     }
 
     /**
-     * Returns a time series of energy statistics for each generation step in [fromStep, toStep].
+     * Returns a time series of energy statistics for each generation step in
+     * [fromStep, toStep].
      *
      * @param fromStep the starting generation index (inclusive)
      * @param toStep   the ending generation index (inclusive)
      * @return a Map from generation step index to its IntSummaryStatistics
      */
     public Map<Integer, IntSummaryStatistics> getTimeSeriesStats(int fromStep, int toStep) {
-        // TODO: iterate generations in range and compute energyStatistics for each
-        return null;
+        Map<Integer, IntSummaryStatistics> returnMap = new HashMap<>();
+        for (int i = fromStep; i <= toStep; i++) {
+            Generation gen = game.getGenerations().get(i);
+            if (gen != null) {
+                returnMap.put(i, energyStatistics(gen));
+            }
+        }
+        return returnMap;
     }
+
+    public BoardRepository getBoardRepository() {
+        return boardRepository;
+    }
+
 }

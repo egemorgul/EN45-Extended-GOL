@@ -51,15 +51,15 @@ public class Cell implements Evolvable, Interactable {
     /** Persisted lifepoints (default 0) */
     @Column(name = "lifepoints", nullable = false)
     protected Integer lifePoints = 0;
-    
+
     /** The cell type determining specialized behavior rules */
     @Column(name = "cell_type", nullable = false)
     private CellType cellType = CellType.BASIC;
-    
+
     /** The cell mood determining interaction behavior */
     @Column(name = "cell_mood", nullable = false)
     private CellMood cellMood = CellMood.NAIVE;
-    
+
     /** Counter for tracking survival in death conditions (for HIGHLANDER) */
     @Transient
     private int deathGenerationCounter = 0;
@@ -160,7 +160,7 @@ public class Cell implements Evolvable, Interactable {
             // Apply standard Conway rules (BASIC)
             liveConditionsMet = evaluateBasicRules(aliveNeighbors);
         }
-        
+
         // Update life points based on cell's fate
         if (isAlive) {
             if (liveConditionsMet) {
@@ -177,7 +177,7 @@ public class Cell implements Evolvable, Interactable {
             lifePoints = 0;
             willLive = true;
         }
-        
+
         // A cell must have non-negative life points to be alive
         if (lifePoints < 0) {
             willLive = false;
@@ -185,7 +185,7 @@ public class Cell implements Evolvable, Interactable {
 
         return willLive;
     }
-    
+
     /**
      * Helper method to evaluate basic Conway's Game of Life rules
      */
@@ -347,7 +347,7 @@ public class Cell implements Evolvable, Interactable {
         if (!isAlive || !otherCell.isAlive()) {
             return;
         }
-        
+
         // Interaction rules based on moods
         if (cellMood == CellMood.HEALER) {
             if (otherCell.getMood() == CellMood.NAIVE) {
@@ -383,7 +383,7 @@ public class Cell implements Evolvable, Interactable {
     public void setType(CellType t) {
         this.cellType = t;
     }
-    
+
     /**
      * Gets the current type of this cell.
      * 
@@ -409,5 +409,10 @@ public class Cell implements Evolvable, Interactable {
      */
     public CellMood getMood() {
         return this.cellMood;
+    }
+
+    // Returns its cell type
+    public CellType getCellType() {
+        return this.cellType;
     }
 }
