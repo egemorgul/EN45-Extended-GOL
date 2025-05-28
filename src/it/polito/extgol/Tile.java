@@ -58,6 +58,8 @@ public class Tile implements Interactable {
     @Transient
     private Set<Tile> neighbors = new HashSet<Tile>();
 
+    /** Life point modifier for this tile */
+    @Column(name = "life_point_modifier", nullable = false)
     private Integer lifePointModifier = 0;
 
     /**
@@ -188,21 +190,31 @@ public class Tile implements Interactable {
      * A positive value grants extra energy to the cell each generation, while
      * a negative value drains energy. A zero value has no effect.
      *
-     * @return the integer modifier to a cell’s lifePoints when evolving
+     * @return the integer modifier to a cell's lifePoints when evolving
      */
     public Integer getLifePointModifier() {
         return lifePointModifier;
     }
-
-    public void setLifePointsModifier(Integer lifePointModifier) {
-        this.lifePointModifier = lifePointModifier;
+    
+    /**
+     * Sets the life point modifier for this tile.
+     * 
+     * @param modifier the value to set for life point modification
+     */
+    public void setLifePointModifier(Integer modifier) {
+        this.lifePointModifier = modifier;
     }
-
+    
+    /**
+     * Interacts with the cell on this tile, modifying its life points
+     * based on the tile's lifePointModifier.
+     *
+     * @param cell the Cell to interact with
+     */
     @Override
-    public void interact(Cell other) {
-        if (other.isAlive()) {
-            other.setLifePoints(lifePointModifier + other.getLifePoints());
+    public void interact(Cell cell) {
+        if (cell != null && cell.isAlive()) {
+            cell.setLifePoints(cell.getLifePoints() + lifePointModifier);
         }
     }
-
 }

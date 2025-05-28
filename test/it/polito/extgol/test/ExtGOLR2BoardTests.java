@@ -1,14 +1,13 @@
 package it.polito.extgol.test;
 
+import static it.polito.extgol.test.TestBranchUtils.*;
+import static org.junit.Assert.*;
+
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,7 +22,6 @@ import it.polito.extgol.JPAUtil;
 import it.polito.extgol.Tile;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import static it.polito.extgol.test.TestBranchUtils.assumeBranch;
 
 public class ExtGOLR2BoardTests {
     private ExtendedGameOfLife facade;
@@ -350,3 +348,4 @@ public class ExtGOLR2BoardTests {
         assertEquals("Maximum energy should be 12", 12, last.getMax());
     }
 }
+

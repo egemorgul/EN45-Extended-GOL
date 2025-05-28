@@ -25,10 +25,6 @@ import jakarta.persistence.UniqueConstraint;
  * Entity representing a generation within a Game of Life simulation.
  * Each generation records the game state of every cell on the board at its
  * given step.
- * 
- * Use createInitial(...) to construct the initial state (step 0), and
- * createNextGeneration(...) to
- * advance from a previous generation.
  */
 @Entity
 @Table(name = "generation", uniqueConstraints = @UniqueConstraint(columnNames = { "game_id", "step" }))
@@ -127,8 +123,12 @@ public class Generation {
      * @param type   the cell type to assign
      */
     public void setType(List<Coord> coords, CellType type) {
-
-        // to be implemented for R1
+        for (Coord c : coords) {
+            Cell cell = board.getTile(c).getCell();
+            if (cell != null) {
+                cell.setType(type);
+            }
+        }
     }
 
     /**
@@ -309,8 +309,31 @@ public class Generation {
      * @throws ExtendedGameOfLifeException if game, board, or cellTypesMap is null
      */
     public static Generation createInitial(Game game, Board board, Map<Coord, CellType> cellTypesMap) {
-        // TODO: create specialized factory
-        return null;
+        Objects.requireNonNull(game, "Game cannot be null");
+        Objects.requireNonNull(board, "Board cannot be null");
+        Objects.requireNonNull(cellTypesMap, "cellTypesMap cannot be null");
+
+        game.clearGenerations();
+        Generation init = new Generation(game, board, 0);
+        
+        // Set cells alive and assign types
+        for (Map.Entry<Coord, CellType> entry : cellTypesMap.entrySet()) {
+            Coord coord = entry.getKey();
+            CellType type = entry.getValue();
+            
+            Tile tile = board.getTile(coord);
+            if (tile != null) {
+                Cell cell = tile.getCell();
+                if (cell != null) {
+                    cell.setAlive(true);
+                    cell.setType(type);
+                }
+            }
+        }
+        
+        init.snapCells();
+        game.addGeneration(init, 0);
+        return init;
     }
 
     /**
@@ -324,25 +347,32 @@ public class Generation {
     }
 
     /**
-     * Returns an immutable snapshot of each cell’s alive/dead state.
+     * Returns an immutable snapshot of each cell's alive/dead state.
      *
      * @return a Map from Cell to Boolean indicating aliveness (true = alive, false
      *         = dead)
      */
     public Map<Cell, Boolean> getCellAlivenessStates() {
-        return cellAlivenessStates;
+        return Map.copyOf(cellAlivenessStates);
     }
 
     /**
      * Retrieves the current mood of each cell in this generation.
      *
-     * @return a Map from Cell to CellMood representing each cell’s interaction
+     * @return a Map from Cell to CellMood representing each cell's interaction
      *         style
-     * @throws UnsupportedOperationException until implemented
      */
     public Map<Cell, CellMood> getMoodStates() {
-        // TODO: create mood states getter
-        return null;
+        Map<Cell, CellMood> moodMap = new HashMap<>();
+
+        for (Tile tile : board.getTiles()) {
+            Cell cell = tile.getCell();
+            if (cell != null) {
+                moodMap.put(cell, cell.getMood());
+            }
+        }
+
+        return moodMap;
     }
 
     /**
