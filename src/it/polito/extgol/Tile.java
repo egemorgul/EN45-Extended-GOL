@@ -217,7 +217,7 @@ public class Tile implements Interactable {
      */
     @Override
     public void interact(Cell cell) {
-        if (cell != null && cell.isAlive() && lifePointModifier != 0) {
+        if (cell != null && cell.isAlive()) {
             cell.setLifePoints(cell.getLifePoints() + lifePointModifier);
         }
     }

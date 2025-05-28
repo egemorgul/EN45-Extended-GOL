@@ -42,21 +42,17 @@ public class ExtendedGameOfLife {
                 "Generation must have associated Board and Game!");
         }
 
-        // Step 1: Apply tile interactions to cells
+        // Step 1 & 2: Apply all interactions (tile-cell and cell-cell) in one pass
         for (Tile tile : board.getTiles()) {
             Cell cell = tile.getCell();
-            if (cell != null && cell.isAlive()) {
+            if (cell != null) {
+                // Apply tile interaction with cell
                 tile.interact(cell);
-            }
-        }
-        
-        // Step 2: Apply cell-to-cell interactions
-        for (Tile tile : board.getTiles()) {
-            Cell cell = tile.getCell();
-            if (cell != null && cell.isAlive()) {
+                
+                // Apply cell-to-cell interactions with neighbors
                 for (Tile neighborTile : tile.getNeighbors()) {
                     Cell neighbor = neighborTile.getCell();
-                    if (neighbor != null && neighbor.isAlive()) {
+                    if (neighbor != null) {
                         cell.interact(neighbor);
                     }
                 }

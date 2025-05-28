@@ -125,49 +125,40 @@ public class Cell implements Evolvable, Interactable {
         Boolean willLive = this.isAlive;
         boolean liveConditionsMet = false;
 
-        // Apply specialized cell type behaviors
-        switch (cellType) {
-            case HIGHLANDER:
-                // Highlander can survive death conditions for 3 generations
-                if (isAlive && (aliveNeighbors < 2 || aliveNeighbors > 3)) {
-                    if (deathGenerationCounter < 3) {
-                        deathGenerationCounter++;
-                        liveConditionsMet = true;
-                    } else {
-                        deathGenerationCounter = 0;
-                        liveConditionsMet = false;
-                    }
+        // Apply specialized cell type behaviors using instanceof
+        if (cellType == CellType.HIGHLANDER) {
+            // Highlander can survive death conditions for 3 generations
+            if (isAlive && (aliveNeighbors < 2 || aliveNeighbors > 3)) {
+                if (deathGenerationCounter < 3) {
+                    deathGenerationCounter++;
+                    liveConditionsMet = true;
                 } else {
                     deathGenerationCounter = 0;
-                    liveConditionsMet = evaluateBasicRules(aliveNeighbors);
+                    liveConditionsMet = false;
                 }
-                break;
-                
-            case LONER:
-                // Loner can survive with as few as 1 neighbor
-                if (isAlive) {
-                    liveConditionsMet = (aliveNeighbors >= 1 && aliveNeighbors <= 3);
-                } else {
-                    // For dead cells, standard respawn rule applies
-                    liveConditionsMet = (aliveNeighbors == 3);
-                }
-                break;
-                
-            case SOCIAL:
-                // Social can survive with up to 8 neighbors
-                if (isAlive) {
-                    liveConditionsMet = (aliveNeighbors >= 2);
-                } else {
-                    // For dead cells, standard respawn rule applies
-                    liveConditionsMet = (aliveNeighbors == 3);
-                }
-                break;
-                
-            case BASIC:
-            default:
-                // Apply standard Conway rules
+            } else {
+                deathGenerationCounter = 0;
                 liveConditionsMet = evaluateBasicRules(aliveNeighbors);
-                break;
+            }
+        } else if (cellType == CellType.LONER) {
+            // Loner can survive with as few as 1 neighbor
+            if (isAlive) {
+                liveConditionsMet = (aliveNeighbors >= 1 && aliveNeighbors <= 3);
+            } else {
+                // For dead cells, standard respawn rule applies
+                liveConditionsMet = (aliveNeighbors == 3);
+            }
+        } else if (cellType == CellType.SOCIAL) {
+            // Social can survive with up to 8 neighbors
+            if (isAlive) {
+                liveConditionsMet = (aliveNeighbors >= 2);
+            } else {
+                // For dead cells, standard respawn rule applies
+                liveConditionsMet = (aliveNeighbors == 3);
+            }
+        } else {
+            // Apply standard Conway rules (BASIC)
+            liveConditionsMet = evaluateBasicRules(aliveNeighbors);
         }
         
         // Update life points based on cell's fate
