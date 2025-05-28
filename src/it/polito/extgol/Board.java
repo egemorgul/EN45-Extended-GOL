@@ -276,7 +276,7 @@ public class Board {
      */
     public static Interactable setInteractableTile(Board board, Coord coord, Integer lifePointsModifier) {
         Tile t = board.getTile(coord);
-        t.setLifePointsModifier(lifePointsModifier);
+        t.setLifePointModifier(lifePointsModifier);
         return t;
     }
 

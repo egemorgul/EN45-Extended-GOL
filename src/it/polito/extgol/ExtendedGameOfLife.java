@@ -52,7 +52,7 @@ public class ExtendedGameOfLife {
             if (cell != null) {
                 // Apply tile interaction with cell
                 tile.interact(cell);
-                
+
                 // Apply cell-to-cell interactions with neighbors
                 for (Tile neighborTile : tile.getNeighbors()) {
                     Cell neighbor = neighborTile.getCell();
@@ -106,7 +106,6 @@ public class ExtendedGameOfLife {
     public Game run(Game game, int steps) {
         Generation current = game.getStart();
         for (int i = 0; i < steps; i++) {
-            current.getBoard().getTiles().forEach(t -> t.interact(t.getCell()));
             Generation next = evolve(current);
             current = next;
         }
