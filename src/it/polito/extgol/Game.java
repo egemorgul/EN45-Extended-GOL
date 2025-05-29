@@ -272,7 +272,6 @@ public class Game {
                 //throw new ExtendedGameOfLifeException("Event type not found.");
                 break;
         }
-        cell.getTile().interact(cell);
     }
 
     /**

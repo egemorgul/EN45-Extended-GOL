@@ -37,9 +37,6 @@ public class Tile implements Interactable {
     })
     private Coord tileCoord;
 
-    @Column(name = "lp_modifier", nullable = false)
-    private Integer lifePointModifier = 0;
-
     /** Reference to the board containing this tile. */
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id", nullable = false)
@@ -62,7 +59,7 @@ public class Tile implements Interactable {
     private Set<Tile> neighbors = new HashSet<Tile>();
 
     /** Life point modifier for this tile */
-    @Column(name = "life_point_modifier", nullable = false)
+    @Column(name = "lp_modifier", nullable = false)
     private Integer lifePointModifier = 0;
 
     /**
@@ -219,9 +216,5 @@ public class Tile implements Interactable {
         if (cell != null && cell.isAlive()) {
             cell.setLifePoints(cell.getLifePoints() + lifePointModifier);
         }
-    }
-
-    public void setLifePointModifier(Integer newModifier) {
-        lifePointModifier = newModifier;
     }
 }
