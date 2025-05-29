@@ -248,7 +248,12 @@ public class Game {
      * @param targetCoordinates the list of coordinates of cells to update
      */
     public void setMood(CellMood mood, List<Coord> targetCoordinates) {
-        // TODO: implement mood assignment for specified cells
+        for (Coord coord : targetCoordinates) {
+            Tile tile = board.getTile(coord);
+            if (tile != null && tile.getCell() != null) {
+                tile.getCell().setMood(mood);
+            }
+        }
     }
 
     /**
@@ -259,7 +264,12 @@ public class Game {
      * @param coordinates the list of cell coordinates to update
      */
     public void setMoods(CellMood mood, List<Coord> coordinates) {
-        // TODO: implement moods assignment for specified coordinates
+        for (Coord coord : coordinates) {
+            Tile tile = board.getTile(coord);
+            if (tile != null && tile.getCell() != null) {
+                tile.getCell().setMood(mood);
+            }
+        }
     }
 
     /**
