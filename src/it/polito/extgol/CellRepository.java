@@ -3,7 +3,9 @@ package it.polito.extgol;
 import java.util.List;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Repository for Cell entities, providing persistence operations
@@ -42,10 +44,14 @@ public class CellRepository extends GenericExtGOLRepository<Cell, Long> {
     public List<Cell> findByType(CellType type) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
-            TypedQuery<Cell> query = em.createQuery(
-                "SELECT c FROM Cell c WHERE c.cellType = :type", Cell.class);
-            query.setParameter("type", type);
-            return query.getResultList();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Cell> cq = cb.createQuery(Cell.class);
+            Root<Cell> root = cq.from(Cell.class);
+            
+            cq.select(root)
+              .where(cb.equal(root.get(Cell_.cellType), type));
+            
+            return em.createQuery(cq).getResultList();
         } finally {
             em.close();
         }
@@ -60,10 +66,17 @@ public class CellRepository extends GenericExtGOLRepository<Cell, Long> {
     public List<Cell> findAliveByMood(CellMood mood) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
-            TypedQuery<Cell> query = em.createQuery(
-                "SELECT c FROM Cell c WHERE c.cellMood = :mood AND c.isAlive = true", Cell.class);
-            query.setParameter("mood", mood);
-            return query.getResultList();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Cell> cq = cb.createQuery(Cell.class);
+            Root<Cell> root = cq.from(Cell.class);
+            
+            cq.select(root)
+              .where(cb.and(
+                  cb.equal(root.get(Cell_.cellMood), mood),
+                  cb.equal(root.get(Cell_.isAlive), true)
+              ));
+            
+            return em.createQuery(cq).getResultList();
         } finally {
             em.close();
         }
