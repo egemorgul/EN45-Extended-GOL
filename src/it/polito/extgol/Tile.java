@@ -32,10 +32,8 @@ public class Tile implements Interactable {
     /** Coordinates of the tile on the board. */
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name = "x",
-            column = @Column(name = "tile_x", nullable = false)),
-        @AttributeOverride(name = "y",
-            column = @Column(name = "tile_y", nullable = false))
+            @AttributeOverride(name = "x", column = @Column(name = "tile_x", nullable = false)),
+            @AttributeOverride(name = "y", column = @Column(name = "tile_y", nullable = false))
     })
     private Coord tileCoord;
 
@@ -55,17 +53,17 @@ public class Tile implements Interactable {
     /**
      * The cell occupying this tile.
      */
-    @OneToOne(
-      cascade = CascadeType.ALL,
-      orphanRemoval = true,
-      fetch = FetchType.LAZY
-    )
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "cell_id", nullable = false, unique = true)
     private Cell cell;
 
     /** Neighboring tiles for interactions. Not persisted. */
     @Transient
     private Set<Tile> neighbors = new HashSet<Tile>();
+
+    /** Life point modifier for this tile */
+    @Column(name = "life_point_modifier", nullable = false)
+    private Integer lifePointModifier = 0;
 
     /**
      * Default constructor required by JPA.
@@ -76,11 +74,12 @@ public class Tile implements Interactable {
     /**
      * Constructs a tile at the given coordinates,
      * and the respective cell initialized as not alive
+     * 
      * @param x column index (0-based)
      * @param y row index (0-based)
      */
     public Tile(int x, int y, Board b, Game g) {
-        this.tileCoord = new Coord(x,y);
+        this.tileCoord = new Coord(x, y);
         this.board = b;
         this.game = g;
         this.cell = new Cell(this.tileCoord, this, b, g);
@@ -186,27 +185,43 @@ public class Tile implements Interactable {
     }
 
     // EXTENDED BEHAVIORS
-    
+
     /**
-     * Retrieves the life point modifier that this tile applies to any cell occupying it.
+     * Retrieves the life point modifier that this tile applies to any cell
+     * occupying it.
      * 
      * A positive value grants extra energy to the cell each generation, while
      * a negative value drains energy. A zero value has no effect.
      *
-     * @return the integer modifier to a cell’s lifePoints when evolving
+     * @return the integer modifier to a cell's lifePoints when evolving
      */
     public Integer getLifePointModifier() {
-        // TODO Auto-generated method stub
-        return 0;
+        return lifePointModifier;
+    }
+    
+    /**
+     * Sets the life point modifier for this tile.
+     * 
+     * @param modifier the value to set for life point modification
+     */
+    public void setLifePointModifier(Integer modifier) {
+        this.lifePointModifier = modifier;
+    }
+    
+    /**
+     * Interacts with the cell on this tile, modifying its life points
+     * based on the tile's lifePointModifier.
+     *
+     * @param cell the Cell to interact with
+     */
+    @Override
+    public void interact(Cell cell) {
+        if (cell != null && cell.isAlive()) {
+            cell.setLifePoints(cell.getLifePoints() + lifePointModifier);
+        }
     }
 
     public void setLifePointModifier(Integer newModifier) {
         lifePointModifier = newModifier;
     }
-
-    @Override
-    public void interact(Cell other) {
-        other.setLifePoints(other.getLifePoints() + lifePointModifier);
-    }
-
 }
