@@ -59,7 +59,7 @@ public class Tile implements Interactable {
     private Set<Tile> neighbors = new HashSet<Tile>();
 
     /** Life point modifier for this tile */
-    @Column(name = "life_point_modifier", nullable = false)
+    @Column(name = "lp_modifier", nullable = false)
     private Integer lifePointModifier = 0;
 
     /**

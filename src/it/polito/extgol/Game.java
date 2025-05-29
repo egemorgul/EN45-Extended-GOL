@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderColumn;
@@ -56,9 +57,20 @@ public class Game {
      * All generations (including initial) in time order.
      * Uses an ORDER_COLUMN so the DB keeps the sequence.
      */
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(
+      mappedBy       = "game",
+      cascade        = CascadeType.ALL,
+      orphanRemoval  = true,
+      fetch          = FetchType.EAGER
+    )
     @OrderColumn(name = "generation_index")
     private List<Generation> generations = new ArrayList<>();
+
+    @Lob
+    @Column(name = "events", nullable = false)
+    private HashMap<Integer, EventType> eventMapInternal = new HashMap<>();
+
+    private final static GameRepository gameRepository = new GameRepository();
 
     /**
      * Default constructor for JPA.
@@ -237,7 +249,29 @@ public class Game {
      * @param cell  the Cell instance to which the event should be applied
      */
     public void unrollEvent(EventType event, Cell cell) {
-        // TODO: implement event application logic
+        switch (event) {
+            case CATACLYSM:
+                cell.getTile().setLifePointModifier(-cell.getLifePoints());
+                break;
+            case FAMINE:
+                cell.getTile().setLifePointModifier(-1);
+                break;
+            case BLOOM:
+                cell.getTile().setLifePointModifier(2);
+                break;
+            case BLOOD_MOON:
+                //TODO: see after persistance
+                break;
+            case SANCTUARY:
+                if (cell.getMood() == CellMood.HEALER)
+                    cell.getTile().setLifePointModifier(1);
+                else if (cell.getMood() == CellMood.VAMPIRE)
+                    cell.setMood(CellMood.NAIVE);
+                break;
+            default:
+                //throw new ExtendedGameOfLifeException("Event type not found.");
+                break;
+        }
     }
 
     /**
@@ -279,8 +313,7 @@ public class Game {
      * @return a mutable Map from generation step to EventType
      */
     public Map<Integer, EventType> getEventMapInternal() {
-        // TODO: return the actual event schedule map
-        return new HashMap<>();
+        return eventMapInternal;
     }
 
     /**
@@ -293,7 +326,14 @@ public class Game {
      * @return an immutable Map from generation step to EventType
      */
     public static Map<Integer, EventType> loadEvents(Game game) {
-        // TODO: implement repository loading
-        return null;
+        //getting the loaded map from the db
+        Map<Integer, EventType> eventsMap = gameRepository.findById(game.id).get().getEventMapInternal();
+        //connecting the loaded map with single generations
+        List<Generation> generations = game.getGenerations();
+        for (Map.Entry<Integer,EventType> entry: eventsMap.entrySet()) {
+            if (entry.getKey() < generations.size())
+                generations.get(entry.getKey()).setEventType(entry.getValue());
+        }
+        return eventsMap;
     }
 }

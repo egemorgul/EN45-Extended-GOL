@@ -65,6 +65,9 @@ public class Generation {
     @Column(name = "is_alive", nullable = false)
     private Map<Cell, Boolean> cellAlivenessStates = new HashMap<>();
 
+    @Column(name = "event", nullable = true)
+    private EventType event = null;
+    
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "generation_lp", joinColumns = {
             // This maps generation_state.generation_id → generation.id
@@ -383,6 +386,10 @@ public class Generation {
      */
     public void setCellAlivenessStates(Map<Cell, Boolean> cellAlivenessStates) {
         this.cellAlivenessStates = cellAlivenessStates;
+    }
+
+    public void setEventType(EventType event) {
+        this.event = event;
     }
 
 }

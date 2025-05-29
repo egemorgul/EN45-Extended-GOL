@@ -260,7 +260,7 @@ public class Board {
             }
         }
         return sb.toString();
-    }
+}
 
     // EXTENDED BEHAVIORS
 

@@ -455,6 +455,10 @@ public class Cell implements Evolvable, Interactable {
         return this.cellMood;
     }
 
+    public Tile getTile() {
+        return tile;
+    }
+
     // Returns its cell type
     public CellType getCellType() {
         return this.cellType;
