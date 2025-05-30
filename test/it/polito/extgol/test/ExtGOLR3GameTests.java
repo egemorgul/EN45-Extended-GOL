@@ -1,12 +1,10 @@
 package it.polito.extgol.test;
 
-import static it.polito.extgol.test.TestBranchUtils.*;
-import static org.junit.Assert.*;
-
 import java.util.List;
 import java.util.Map;
 
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,8 +16,8 @@ import it.polito.extgol.ExtendedGameOfLife;
 import it.polito.extgol.Game;
 import it.polito.extgol.Generation;
 import it.polito.extgol.JPAUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
+
+import static it.polito.extgol.test.TestBranchUtils.assumeBranch;
 
 public class ExtGOLR3GameTests {
     private ExtendedGameOfLife facade;
@@ -39,25 +37,10 @@ public class ExtGOLR3GameTests {
      */
     @Before
     public void setUp() {
-        clearDatabase();
+        TestDatabaseUtil.clearDatabase();
         facade = new ExtendedGameOfLife();
         game  = Game.createExtended("TestGame", 6, 6);
         board = game.getBoard();
-    }
-
-    private void clearDatabase() {
-        EntityManager em = JPAUtil.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        tx.begin();
-        for (String table : List.of("generation_state", "generation", "board", "game", "tile")) {
-            try {
-                em.createNativeQuery("DELETE FROM " + table).executeUpdate();
-            } catch (Exception e) {
-                System.out.println(table +" does not exist!");
-            }
-        }
-        tx.commit();
-        em.close();
     }
 
     // R3 Game Extended Behaviors
