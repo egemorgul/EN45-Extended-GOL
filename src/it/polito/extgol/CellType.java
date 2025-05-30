@@ -24,5 +24,28 @@ public enum CellType {
      * Crowd-loving cell: can survive even in highly populated situations,
      * up to eight neighbors.
      */
-    SOCIAL
+    SOCIAL;
+
+    @Override
+    public String toString() {
+        String code;
+        switch (this) {
+            case BASIC:
+                code = "C";
+                break;
+            case HIGHLANDER:
+                code = "H";
+                break;
+            case LONER:
+                code = "L";
+                break;
+            case SOCIAL:
+                code = "S";
+                break;
+            default:
+                code = null;
+                break;
+        }
+        return code;
+    }
 }
