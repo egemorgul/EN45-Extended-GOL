@@ -377,7 +377,11 @@ public class Board {
      * @return an IntSummaryStatistics with aggregated lifePoints metrics
      */
     public IntSummaryStatistics energyStatistics(Generation gen) {
-        return boardRepository.getEnergyStatistics(gen);
+        return gen.getEnergyStates()
+                .entrySet().stream()
+                .filter(e -> gen.getCellAlivenessStates().get(e.getKey()))
+                .mapToInt(e -> e.getValue())
+                .summaryStatistics();
     }
 
     /**
