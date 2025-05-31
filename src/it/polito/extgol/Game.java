@@ -336,4 +336,16 @@ public class Game {
         }
         return eventsMap;
     }
+
+    /**
+     * Resets the life point modifier for all tiles on the board.
+     * <p>
+     * This method iterates through all tiles in the board and sets their
+     * life point modifier to zero, removing the event effect for future generations.
+     */
+    public void cleanEvent() {
+        for (Tile tile: board.getTiles()) {
+            tile.setLifePointModifier(0);
+        }
+    }
 }
