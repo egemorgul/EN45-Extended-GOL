@@ -49,7 +49,7 @@ public class ExtendedGameOfLife {
         }
 
         // Step 1 & 2: Apply all interactions (tile-cell and cell-cell) in one pass
-        for (Tile tile : board.getTiles()) {
+        for (Tile tile : board.getTiles().stream().filter(t -> t.getCell().isAlive()).toList()) {
             Cell cell = tile.getCell();
             if (cell != null) {
                 // Apply tile interaction with cell

@@ -260,13 +260,16 @@ public class Game {
                 cell.getTile().setLifePointModifier(2);
                 break;
             case BLOOD_MOON:
-                //TODO: see after persistance
+                if (cell.getMood() == CellMood.VAMPIRE) {
+                    cell.setBloodMoon(true);
+                }
                 break;
             case SANCTUARY:
                 if (cell.getMood() == CellMood.HEALER)
                     cell.getTile().setLifePointModifier(1);
                 else if (cell.getMood() == CellMood.VAMPIRE)
                     cell.setMood(CellMood.NAIVE);
+                    cell.setNextMood(null);
                 break;
             default:
                 //throw new ExtendedGameOfLifeException("Event type not found.");
@@ -346,6 +349,9 @@ public class Game {
     public void cleanEvent() {
         for (Tile tile: board.getTiles()) {
             tile.setLifePointModifier(0);
+            if (tile.getCell().getMood() == CellMood.VAMPIRE) {
+                tile.getCell().setBloodMoon(false);
+            }
         }
     }
 }

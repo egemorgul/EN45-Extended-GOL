@@ -60,6 +60,10 @@ public class Cell implements Evolvable, Interactable {
     @Column(name = "cell_mood", nullable = false)
     private CellMood cellMood = CellMood.NAIVE;
 
+    /** The cell mood determining interaction behavior */
+    @Column(name = "next_mood", nullable = true)
+    private CellMood nextMood = null;
+
     /** Counter for tracking survival in death conditions (for HIGHLANDER) */
     @Transient
     private int deathGenerationCounter = 0;
@@ -81,6 +85,8 @@ public class Cell implements Evolvable, Interactable {
     /** Back-reference: Tile owns the foreign key mapping. */
     @OneToOne(mappedBy = "cell", fetch = FetchType.LAZY)
     protected Tile tile;
+
+    private boolean bloodMoon = false;
 
     /** Default constructor for JPA compliance. */
     public Cell() {
@@ -182,6 +188,9 @@ public class Cell implements Evolvable, Interactable {
         if (lifePoints < 0) {
             willLive = false;
         }
+
+        // Set cell's new mood
+        cellMood = (nextMood == null) ? cellMood : nextMood;
 
         return willLive;
     }
@@ -388,10 +397,14 @@ public class Cell implements Evolvable, Interactable {
             if (targetMood == CellMood.NAIVE) {
                 // HEALER grants 1 lifePoint to NAIVE
                 target.setLifePoints(target.getLifePoints() + 1);
-            } else if (targetMood == CellMood.VAMPIRE) {
+            } else if (targetMood == CellMood.VAMPIRE && healer.getLifePoints() >= 0) {
                 // VAMPIRE absorbs 1 lifePoint from HEALER
                 healer.setLifePoints(healer.getLifePoints() - 1);
                 target.setLifePoints(target.getLifePoints() + 1);
+                if (target.bloodMoon) {
+                    // VAMPIRE turns the HEALER into VAMPIRE
+                    healer.setNextMood(CellMood.VAMPIRE);
+                }
             }
             // HEALER + HEALER: nothing happens
         }
@@ -409,12 +422,8 @@ public class Cell implements Evolvable, Interactable {
                 // VAMPIRE absorbs 1 lifePoint from NAIVE and turns them into VAMPIRE
                 vampire.setLifePoints(vampire.getLifePoints() + 1);
                 target.setLifePoints(target.getLifePoints() - 1);
-                target.setMood(CellMood.VAMPIRE);
-            } else if (targetMood == CellMood.HEALER) {
-                // VAMPIRE absorbs 1 lifePoint from HEALER
-                vampire.setLifePoints(vampire.getLifePoints() + 1);
-                target.setLifePoints(target.getLifePoints() - 1);
-            }
+                target.setNextMood(CellMood.VAMPIRE);
+            } // VAMPIRE + HEALER: handled in handleHealerInteraction
             // VAMPIRE + VAMPIRE: nothing happens
         }
     }
@@ -462,5 +471,13 @@ public class Cell implements Evolvable, Interactable {
     // Returns its cell type
     public CellType getCellType() {
         return this.cellType;
+    }
+
+    public void setBloodMoon(boolean bloodMoon) {
+        this.bloodMoon = bloodMoon;
+    }
+
+    public void setNextMood(CellMood mood) {
+        nextMood = mood;
     }
 }
