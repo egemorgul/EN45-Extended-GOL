@@ -252,7 +252,7 @@ public class Board {
         StringBuilder sb = new StringBuilder();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                sb.append(alive.contains(new Coord(x, y)) ? 'C' : '0');
+                sb.append(alive.contains(new Coord(x, y)) ? tiles.get(new Coord(x, y)).getCell().getCellType() : '0');
             }
             // use height here so you don't append a newline after the last row
             if (y < height - 1) {
@@ -377,7 +377,11 @@ public class Board {
      * @return an IntSummaryStatistics with aggregated lifePoints metrics
      */
     public IntSummaryStatistics energyStatistics(Generation gen) {
-        return boardRepository.getEnergyStatistics(gen);
+        return gen.getEnergyStates()
+                .entrySet().stream()
+                .filter(e -> gen.getCellAlivenessStates().get(e.getKey()))
+                .mapToInt(e -> e.getValue())
+                .summaryStatistics();
     }
 
     /**

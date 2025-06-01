@@ -49,7 +49,7 @@ public class ExtendedGameOfLife {
         }
 
         // Step 1 & 2: Apply all interactions (tile-cell and cell-cell) in one pass
-        for (Tile tile : board.getTiles()) {
+        for (Tile tile : board.getTiles().stream().filter(t -> t.getCell().isAlive()).toList()) {
             Cell cell = tile.getCell();
             if (cell != null) {
                 // Apply tile interaction with cell
@@ -106,12 +106,11 @@ public class ExtendedGameOfLife {
      * @return The same Game instance, updated with the new generation.
      */
     public Game run(Game game, int steps) {
-        Generation current = game.getStart();
+        Generation current = game.getGenerations().get(game.getGenerations().size() - 1);
         for (int i = 0; i < steps; i++) {
             Generation next = evolve(current);
             current = next;
         }
-        saveGame(game);
         return game;
     }
 
@@ -148,6 +147,7 @@ public class ExtendedGameOfLife {
                 }
             }
             game = run(game, 1);
+            game.cleanEvent();
             //insert the event type into its generation
             game.getGenerations().get(game.getGenerations().size()-1).setEventType(eventMap.get(i));
         }
