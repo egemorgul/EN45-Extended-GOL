@@ -254,7 +254,7 @@ public class Game {
                 cell.getTile().setLifePointModifier(-cell.getLifePoints());
                 break;
             case FAMINE:
-                cell.getTile().setLifePointModifier(-1);
+                cell.getTile().setLifePointModifier(cell.getTile().getLifePointModifier() - 1);
                 break;
             case BLOOM:
                 cell.getTile().setLifePointModifier(2);
